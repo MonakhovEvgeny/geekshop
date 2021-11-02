@@ -3,7 +3,6 @@ from django.urls import path
 
 import mainapp.views as mainapp
 
-<<<<<<< HEAD
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", mainapp.main, name="main"),
@@ -14,11 +13,4 @@ urlpatterns = [
     path("products/modern", mainapp.products, name="products_modern"),
     path("products/classic", mainapp.products, name="products_classic"),
     path("contact/", mainapp.contact, name="contact"),
-=======
-urlpatterns =[
-    path("admin/", admin.site.urls),
-    path("", mainapp.main),
-    path("products/", mainapp.products),
-    path("contact/", mainapp.contact),
->>>>>>> master
 ]

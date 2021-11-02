@@ -1,13 +1,9 @@
-<<<<<<< HEAD
 import datetime
 
-=======
->>>>>>> master
 from django.shortcuts import render
 
 
 def main(request):
-<<<<<<< HEAD
     title = "главная"
     products = [
         {
@@ -39,7 +35,7 @@ def products(request):
         {"href": "products_classic", "name": "классика"},
     ]
     same_products = [
-        {"name": "Отличный стул", "desc": "Не оторваться.", "image_src": "product-11.jpg", "alt": "продукт 11"},
+        {"name": "Прекрасный стул", "desc": "Не оторваться.", "image_src": "product-11.jpg", "alt": "продукт 11"},
         {"name": "Стул повышенного качества", "desc": "Комфортно.", "image_src": "product-21.jpg", "alt": "продукт 21"},
         {
             "name": "Стул премиального качества",
@@ -72,14 +68,3 @@ def contact(request):
     ]
     content = {"title": title, "visit_date": visit_date, "locations": locations}
     return render(request, "mainapp/contact.html", content)
-=======
-    return render(request, "mainapp/index.html")
-
-
-def products(request):
-    return render(request, "mainapp/products.html")
-
-
-def contact(request):
-    return render(request, "mainapp/contact.html")
->>>>>>> master
