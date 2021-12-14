@@ -4,6 +4,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.shortcuts import HttpResponseRedirect, render
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 
 from authnapp.forms import ShopUserEditForm, ShopUserLoginForm, ShopUserProfileEditForm, ShopUserRegisterForm
 from authnapp.models import ShopUser
@@ -26,7 +27,8 @@ def login(request):
                 return HttpResponseRedirect(request.POST["next_page"])
             return HttpResponseRedirect(reverse("main"))
 
-    content = {"title": title, "login_form": login_form, "next_page": next_page}
+    content = {"title": title, "login_form": login_form,
+               "next_page": next_page}
     return render(request, "authnapp/login.html", content)
 
 
@@ -55,27 +57,33 @@ def register(request):
     return render(request, "authnapp/register.html", content)
 
 
+@login_required
 @transaction.atomic
 def edit(request):
     title = "редактирование"
 
     if request.method == "POST":
-        edit_form = ShopUserEditForm(request.POST, request.FILES, instance=request.user)
-        profile_form = ShopUserProfileEditForm(request.POST, instance=request.user.shopuserprofile)
+        edit_form = ShopUserEditForm(
+            request.POST, request.FILES, instance=request.user)
+        profile_form = ShopUserProfileEditForm(
+            request.POST, instance=request.user.shopuserprofile)
         if edit_form.is_valid() and profile_form.is_valid():
             edit_form.save()
             return HttpResponseRedirect(reverse("auth:edit"))
     else:
         edit_form = ShopUserEditForm(instance=request.user)
-        profile_form = ShopUserProfileEditForm(instance=request.user.shopuserprofile)
+        profile_form = ShopUserProfileEditForm(
+            instance=request.user.shopuserprofile)
 
-    content = {"title": title, "edit_form": edit_form, "profile_form": profile_form, "media_url": settings.MEDIA_URL}
+    content = {"title": title, "edit_form": edit_form,
+               "profile_form": profile_form, "media_url": settings.MEDIA_URL}
 
     return render(request, "authnapp/edit.html", content)
 
 
 def send_verify_mail(user):
-    verify_link = reverse("auth:verify", args=[user.email, user.activation_key])
+    verify_link = reverse("auth:verify", args=[
+                          user.email, user.activation_key])
 
     title = f"Подтверждение учетной записи {user.username}"
     message = f"Для подтверждения учетной записи {user.username} \
@@ -93,7 +101,8 @@ def verify(request, email, activation_key):
             print(f"user {user} is activated")
             user.is_active = True
             user.save()
-            auth.login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            auth.login(request, user,
+                       backend="django.contrib.auth.backends.ModelBackend")
 
             return render(request, "authnapp/verification.html")
         print(f"error activation user: {user}")

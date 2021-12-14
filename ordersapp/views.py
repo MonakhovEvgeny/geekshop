@@ -8,13 +8,14 @@ from django.shortcuts import HttpResponseRedirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from django.views.generic.detail import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from basketapp.models import Basket
 from ordersapp.forms import OrderItemForm
 from ordersapp.models import Order, OrderItem
 
 
-class OrderList(ListView):
+class OrderList(LoginRequiredMixin, ListView):
     model = Order
 
     def get_queryset(self):
@@ -28,14 +29,16 @@ class OrderItemsCreate(CreateView):
 
     def get_context_data(self, **kwargs):
         data = super(OrderItemsCreate, self).get_context_data(**kwargs)
-        OrderFormSet = inlineformset_factory(Order, OrderItem, form=OrderItemForm, extra=1)
+        OrderFormSet = inlineformset_factory(
+            Order, OrderItem, form=OrderItemForm, extra=1)
 
         if self.request.POST:
             formset = OrderFormSet(self.request.POST)
         else:
             basket_items = Basket.get_items(self.request.user)
             if len(basket_items):
-                OrderFormSet = inlineformset_factory(Order, OrderItem, form=OrderItemForm, extra=len(basket_items))
+                OrderFormSet = inlineformset_factory(
+                    Order, OrderItem, form=OrderItemForm, extra=len(basket_items))
                 formset = OrderFormSet()
                 for num, form in enumerate(formset.forms):
                     form.initial["product"] = basket_items[num].product
@@ -83,9 +86,11 @@ class OrderItemsUpdate(UpdateView):
 
     def get_context_data(self, **kwargs):
         data = super(OrderItemsUpdate, self).get_context_data(**kwargs)
-        OrderFormSet = inlineformset_factory(Order, OrderItem, form=OrderItemForm, extra=1)
+        OrderFormSet = inlineformset_factory(
+            Order, OrderItem, form=OrderItemForm, extra=1)
         if self.request.POST:
-            data["orderitems"] = OrderFormSet(self.request.POST, instance=self.object)
+            data["orderitems"] = OrderFormSet(
+                self.request.POST, instance=self.object)
         else:
             formset = OrderFormSet(instance=self.object)
             for form in formset.forms:
@@ -129,7 +134,8 @@ def order_forming_complete(request, pk):
 def product_quantity_update_save(instance, sender, **kwargs):
     if instance.pk:
         """If user change quantity in order or basket"""
-        instance.product.quantity -= instance.quantity - sender.get_item(instance.pk).quantity
+        instance.product.quantity -= instance.quantity - \
+            sender.get_item(instance.pk).quantity
     else:
         """If user create order or basket"""
         instance.product.quantity -= instance.quantity
