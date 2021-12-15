@@ -203,17 +203,13 @@ SOCIAL_AUTH_GITHUB_KEY = github_auth["client_id"]
 SOCIAL_AUTH_GITHUB_SECRET = github_auth["client_secret"]
 
 if DEBUG:
-    INSTALLED_APPS.extend([
-        "debug_toolbar",
-        "template_profiler_panel",
-        "django_extensions",
-    ])
+    INSTALLED_APPS.extend(
+        ["debug_toolbar", "template_profiler_panel", "django_extensions"]
+    )
 
 
 if DEBUG:
-    MIDDLEWARE.extend([
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
-    ])
+    MIDDLEWARE.extend(["debug_toolbar.middleware.DebugToolbarMiddleware"])
 
 # Debgu tool bar settings
 if DEBUG:
@@ -221,9 +217,7 @@ if DEBUG:
     def show_toolbar(request):
         return True
 
-    DEBUG_TOOLBAR_CONFIG = {
-        "SHOW_TOOLBAR_CALLBACK": show_toolbar,
-    }
+    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": show_toolbar}
 
     DEBUG_TOOLBAR_PANELS = [
         # "ddt_request_history.panels.request_history.RequestHistoryPanel",
