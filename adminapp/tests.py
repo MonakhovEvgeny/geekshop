@@ -15,10 +15,8 @@ class TestUserManagement(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.superuser = ShopUser.objects.create_superuser(
-            "django2", "django2@geekshop.local", "geekbrains")
-        self.user = ShopUser.objects.create_user(
-            "tarantino", "tarantino@geekshop.local", "geekbrains")
+        self.superuser = ShopUser.objects.create_superuser("django2", "django2@geekshop.local", "geekbrains")
+        self.user = ShopUser.objects.create_user("tarantino", "tarantino@geekshop.local", "geekbrains")
         self.user_with__first_name = ShopUser.objects.create_user(
             "umaturman", "umaturman@geekshop.local", "geekbrains", first_name="Ума"
         )
@@ -128,8 +126,7 @@ class TestUserManagement(TestCase):
         response = self.client.get(activation_url)
         self.assertEqual(response.status_code, 200)
 
-        self.client.login(
-            username=new_user_data["username"], password=new_user_data["password1"])
+        self.client.login(username=new_user_data["username"], password=new_user_data["password1"])
 
         # Log in
         response = self.client.get("/auth/login/")
@@ -138,8 +135,7 @@ class TestUserManagement(TestCase):
 
         # Main page check
         response = self.client.get("/")
-        self.assertContains(
-            response, text=new_user_data["first_name"], status_code=200)
+        self.assertContains(response, text=new_user_data["first_name"], status_code=200)
 
     def test_user_wrong_register(self):
         new_user_data = {
@@ -155,6 +151,5 @@ class TestUserManagement(TestCase):
         response = self.client.post("/auth/register/", data=new_user_data)
         self.assertEqual(response.status_code, 200)
         # self.assertFormError(response, form, field, errors, msg_prefix='')
-        self.assertFormError(response, "register_form",
-                             "age", "Вы слишком молоды!")
+        self.assertFormError(response, "register_form", "age", "Вы слишком молоды!")
         self.assertIn("Вы слишком молоды!", response.content.decode())

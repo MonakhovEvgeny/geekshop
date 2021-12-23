@@ -33,49 +33,35 @@ class Command(BaseCommand):
 
         # Conditions of sale: returns True or False of condition.
         # F objects means that all calculation will be in database with SQL query
-        action_1__condition = Q(order__updated__lte=F(
-            "order__created") + action_1__time_delta)
+        action_1__condition = Q(order__updated__lte=F("order__created") + action_1__time_delta)
         action_2__condition = Q(order__updated__gt=F("order__created") + action_1__time_delta) & Q(
             order__updated__lte=F("order__created") + action_2__time_delta
         )
-        action_expired__condition = Q(order__updated__gt=F(
-            "order__created") + action_2__time_delta)
+        action_expired__condition = Q(order__updated__gt=F("order__created") + action_2__time_delta)
 
         # Condition mapping with number of sale: when Q object returns True, then return number of sale
         action_1__order = When(action_1__condition, then=ACTION_1)
         action_2__order = When(action_2__condition, then=ACTION_2)
-        action_expired__order = When(
-            action_expired__condition, then=ACTION_EXPIRED)
+        action_expired__order = When(action_expired__condition, then=ACTION_EXPIRED)
 
         # Condition mapping with discount: when Q object returns True, then calculate discount
         # Second 'when' with '-' for decrease ordering
         # F objects means that all calculation will be in database with SQL query
-        action_1__price = When(action_1__condition, then=F(
-            "product__price") * F("quantity") * action_1__discount)
-        action_2__price = When(action_2__condition, then=F(
-            "product__price") * F("quantity") * -action_2__discount)
+        action_1__price = When(action_1__condition, then=F("product__price") * F("quantity") * action_1__discount)
+        action_2__price = When(action_2__condition, then=F("product__price") * F("quantity") * -action_2__discount)
         action_expired__price = When(
-            action_expired__condition, then=F(
-                "product__price") * F("quantity") * action_expired__discount
+            action_expired__condition, then=F("product__price") * F("quantity") * action_expired__discount
         )
 
         # First: we need to annotate every object of OrderItem model with virtual field with number of sale
         # Second: we need to annotate every object of OrderItem model with virtual field with value of discount
         test_orders = (
             OrderItem.objects.annotate(
-                action_order=Case(
-                    action_1__order,
-                    action_2__order,
-                    action_expired__order,
-                    output_field=IntegerField(),
-                )
+                action_order=Case(action_1__order, action_2__order, action_expired__order, output_field=IntegerField())
             )
             .annotate(
                 total_discount=Case(
-                    action_1__price,
-                    action_2__price,
-                    action_expired__price,
-                    output_field=DecimalField(),
+                    action_1__price, action_2__price, action_expired__price, output_field=DecimalField()
                 )
             )
             .order_by("action_order", "total_discount")
