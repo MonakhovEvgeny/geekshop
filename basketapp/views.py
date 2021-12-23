@@ -1,3 +1,5 @@
+from django.db.models import F
+from django.db import connection
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -12,8 +14,10 @@ from mainapp.models import Product
 @login_required
 def basket(request):
     title = "корзина"
-    basket_items = Basket.objects.filter(user=request.user).order_by("product__category")
-    content = {"title": title, "basket_items": basket_items, "media_url": settings.MEDIA_URL}
+    basket_items = Basket.objects.filter(
+        user=request.user).order_by("product__category")
+    content = {"title": title, "basket_items": basket_items,
+               "media_url": settings.MEDIA_URL}
     return render(request, "basketapp/basket.html", content)
 
 
@@ -26,9 +30,15 @@ def basket_add(request, pk):
 
     if not basket:
         basket = Basket(user=request.user, product=product)
+        basket.quantity += 1
+    else:
+        basket.quantity = F("quantity") + 1
 
-    basket.quantity += 1
     basket.save()
+
+    update_queries = list(
+        filter(lambda x: 'UPDATE' in x['sql'], connection.queries))
+    print(f'query basket_add: {update_queries}')
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
@@ -57,10 +67,13 @@ def basket_edit(request, pk, quantity):
         else:
             new_basket_item.delete()
 
-        basket_items = Basket.objects.filter(user=request.user).order_by("product__category")
+        basket_items = Basket.objects.filter(
+            user=request.user).order_by("product__category")
 
-        content = {"basket_items": basket_items, "media_url": settings.MEDIA_URL}
+        content = {"basket_items": basket_items,
+                   "media_url": settings.MEDIA_URL}
 
-        result = render_to_string("basketapp/includes/inc_basket_list.html", content)
+        result = render_to_string(
+            "basketapp/includes/inc_basket_list.html", content)
 
         return JsonResponse({"result": result})
